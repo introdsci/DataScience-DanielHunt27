@@ -8,7 +8,7 @@ output:
 
 ## Abstract
 
-In under 250 words give a brief summary of the project so far.
+So far I have gotten data from "https://www.bls.gov/lpc/major_sector_lpc_data.csv", and have cleaned it up so it is ready to be used. I have also done some very basic analysis.
 
 ### 1. Discovery and Data Preparation
 This goes through getting the data and getting it reading to be used for analysis. It also looks at some things we can do with the data.  
