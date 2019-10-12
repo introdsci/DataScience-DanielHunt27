@@ -1,0 +1,72 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+### Indroduction  
+I am interested in studying data on employment and productivity, because I am interested to see what kind of correlations there could be between things such as hours worked, compensation, profits, and productivity. I think it will be useful to about any relationships between these factors, so that we can figure out the best way to have people work.  
+
+### Dataset 
+First let's load in the data from "https://www.bls.gov/lpc/major_sector_lpc_data.csv".
+
+```{r}
+#library("tidyverse")
+#library("dplyr")
+#library("tidyr")
+#library("readr")
+
+data <- read.csv("https://www.bls.gov/lpc/major_sector_lpc_data.csv")
+```
+Now let's fix up the column names a little so that it is easier to read. We will change all the spots where it says "2012...100" to "2012=100", since in the original dataset it had an equals sign, but R changed it when we imported it. We will also change all the spots where there's two periods to only have one.
+```{r}
+names(data) <- gsub(x = names(data), pattern = "\\.\\.\\.", replacement = "\\.")
+names(data) <- gsub(x = names(data), pattern = "\\.\\.", replacement = "\\.")
+```
+
+Now let's take a look at our data to see what data there is.
+```{r}
+head(data)
+nrow(data)
+ncol(data)
+```
+
+### Source  
+This dataset comes from the U.S. Bureau of Labor Statistics which is a very reliable source since they are part of the U.S. government. They have documented how and where they got the data well, so you can know that it is reliable.  
+
+### Variables  
+```{r}
+colnames(data)
+```
+
+####The Categorical Variables
+**Major.Sectors:** The type of sector that the observation was made about.  
+**Year:** The year that the observation was made.  
+**Quarter:** The quarter that the observation was made.  
+  
+####For the continuous variables there's three different variations:
+  * **2012.100:** which is where it is scaled so that at the year 2012 the value will be 100
+  * **percent.change.from.same.quarter.a.year.ago:** which is the percent change from that quarter from the year before.
+  * **percent.change.from.previous.quarter.at.annual.rate:** which is the percent change from the previous quarter at an annual rate.
+  
+####The actual variables are:
+**Employment:** The total numbers of wage and salary workers, unincorporated self-employed workers, and unpaid family workers working within business establishments. An individual who works multiple jobs at separate establishments would have each job included in the number of employees.  
+**Average.weekly.hours.worked:** The total number of hours worked over a specified period of time, divided by the total number of weeks worked in the time period.   
+**Hours.worked:** The total number of hours worked by wage and salary workers, unincorporated self-employed workers, and unpaid family workers to produce output.  
+**Output:** The amount of goods and services produced.    
+**Current.dollar.output:** The value of goods and services produced, expressed in current dollars.   
+**Compensation:** Monetary and non-monetary payments to or on behalf of individuals for labor services used to produce output. Compensation may include salaries, wages, bonuses, contributions to benefits plans, and other forms of payment.  
+**Nonlabor.payments:** The value of output less the cost for labor services.    
+**Labor.productivity:** The efficiency at which labor hours are utilized in producing output of goods and services, measured as output per hour of labor.   
+**Hourly.compensation:** The sum of wage and salary accruals and supplements to wages and salaries per hour of labor services used to produce output. Wage and salary accruals consist of the monetary remuneration of employees. Supplements to wages and salaries consist of employer contributions for social insurance and employer payments (including payments in kind) to private pension and profit-sharing plans, group health and life insurance plans, privately administered workers' compensation plans.  
+**Unit.labor.costs:** The compensation for labor services used to produce each unit of goods and services.    
+**Unit.nonlabor.costs:** The costs (payments) for each unit of goods and services produced after excluding labor costs and profits from the cost (value) of output.  
+**Unit.nonlabor.payments:** The costs (payments) for each unit of goods and services produced after excluding labor costs and profits from the cost (value) of output.    
+**Implicit.price.deflator:** An index of the change over time in the value of output relative to a base period.  
+**Real.hourly.compensation:** The average monetary payments made to individuals for an hour of labor service, adjusted for inflation.  
+**Output.per.job:** Output per job represents the amount of goods or services a person engaged in a particular occupation (job) can produce over an interval of time, such as a year, regardless of the actual number of hours worked. Output per job can be thought of a measure of output per person that is adjusted for the notion that a person can hold multiple jobs at the same time.  
+**Labor.share:** The portion of the total costs to produce output that can be attributed to the cost of labor.  
+**Profits:** The portion of total income from the sale of goods and services that exceeds the total costs of producing those goods and services.  
+**Unit.profits:** Corporate profits before taxes with inventory valuation and capital consumption adjustments. Total unit costs, less labor costs, are profits.  
+**Total.unit.costs:** The total payments (costs) for each unit of output produced where costs are measured as a difference between total income and profits.  
+
+
