@@ -1,6 +1,6 @@
 ---
-title: " " #replace the title with something short and catchy to represent your project
-subtitle: "____'s Data Science Portfolio" #replace blank with your name
+title: "Productivity, Compensation, and Hours Worked" #replace the title with something short and catchy to represent your project
+subtitle: "Daniel Hunt's Data Science Portfolio" #replace blank with your name
 output:
   html_document:
     df_print: paged

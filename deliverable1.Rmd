@@ -1,26 +1,22 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 ### Indroduction  
 I am interested in studying data on employment and productivity, because I am interested to see what kind of correlations there could be between things such as hours worked, compensation, profits, and productivity. I think it will be useful to about any relationships between these factors, so that we can figure out the best way to have people work.  
 
 ### Dataset 
-First let's load in the data from "https://www.bls.gov/lpc/major_sector_lpc_data.csv".
-
+Before we start we will need to load a library called "tidyverse", since we will be using it later on.
 ```{r}
-#library("tidyverse")
-#library("dplyr")
-#library("tidyr")
-#library("readr")
-
-data <- read.csv("https://www.bls.gov/lpc/major_sector_lpc_data.csv")
+suppressMessages(library("tidyverse"))
 ```
-Now let's fix up the column names a little so that it is easier to read. We will change all the spots where it says "2012...100" to "2012=100", since in the original dataset it had an equals sign, but R changed it when we imported it. We will also change all the spots where there's two periods to only have one.
+
+Now lets load in the data from "https://www.bls.gov/lpc/major_sector_lpc_data.csv".
 ```{r}
-names(data) <- gsub(x = names(data), pattern = "\\.\\.\\.", replacement = "\\.")
-names(data) <- gsub(x = names(data), pattern = "\\.\\.", replacement = "\\.")
+data <- read.csv("https://www.bls.gov/lpc/major_sector_lpc_data.csv")
 ```
 
 Now let's take a look at our data to see what data there is.
@@ -30,10 +26,17 @@ nrow(data)
 ncol(data)
 ```
 
-### Source  
-This dataset comes from the U.S. Bureau of Labor Statistics which is a very reliable source since they are part of the U.S. government. They have documented how and where they got the data well, so you can know that it is reliable.  
+Now that we have an idea of what the data looks like, lets fix up the column names a little so that it is easier to read. We will change all the spots where it says "2012...100" to "2012.100" and we will also change all the spots where there's two periods to only have one.
+```{r}
+names(data) <- gsub(x = names(data), pattern = "\\.\\.\\.", replacement = "\\.")
+names(data) <- gsub(x = names(data), pattern = "\\.\\.", replacement = "\\.")
+```
 
-### Variables  
+### Source  
+This dataset comes from the U.S. Bureau of Labor Statistics which is a very reliable source since they are part of the U.S. government. They have documented how and where they got the data from, so you can know that it is reliable.  
+
+### Variables
+Now we will take a look at all the variables in the dataset. We will first print them all out, then look at each one individually.
 ```{r}
 colnames(data)
 ```
@@ -44,7 +47,7 @@ colnames(data)
 **Quarter:** The quarter that the observation was made.  
   
 ####For the continuous variables there's three different variations:
-  * **2012.100:** which is where it is scaled so that at the year 2012 the value will be 100
+  * **2012.100:** which is where the values are scaled so that at the year 2012 the value will be 100.
   * **percent.change.from.same.quarter.a.year.ago:** which is the percent change from that quarter from the year before.
   * **percent.change.from.previous.quarter.at.annual.rate:** which is the percent change from the previous quarter at an annual rate.
   
@@ -69,4 +72,122 @@ colnames(data)
 **Unit.profits:** Corporate profits before taxes with inventory valuation and capital consumption adjustments. Total unit costs, less labor costs, are profits.  
 **Total.unit.costs:** The total payments (costs) for each unit of output produced where costs are measured as a difference between total income and profits.  
 
+###Seperate Data into Different Tables
+Now let's split this data into a few different tables so that each table will have one observational unit. This means that each table will be more focused, which will make using the data easier.    
+   
+The first table will be called from_year_ago and contain all the variables that are measuring the percent change from the same quarter a year ago.
+```{r}
+from_year_ago <- tibble(major_sectors=data$Major.Sectors, year=data$Year, quarter=data$Quarter,
+                        Employment=data$Employment.percent.change.from.same.quarter.a.year.ago.,
+                        Average_weekly_hours_worked=data$Average.weekly.hours.worked.percent.change.from.same.quarter.a.year.ago.,
+                        Hours_worked=data$Hours.worked.percent.change.from.same.quarter.a.year.ago.,
+                        Output=data$Output.percent.change.from.same.quarter.a.year.ago.,
+                        Current_dollar_output=data$Current.dollar.output.percent.change.from.same.quarter.a.year.ago.,
+                        Compensation=data$Compensation.percent.change.from.same.quarter.a.year.ago.,
+                        Nonlabor_payments=data$Nonlabor.payments.percent.change.from.same.quarter.a.year.ago.,
+                        Labor_productivity=data$Labor.productivity.percent.change.from.same.quarter.a.year.ago.,
+                        Hourly_compensation=data$Hourly.compensation.percent.change.from.same.quarter.a.year.ago.,
+                        Unit_labor_costs=data$Unit.labor.costs.percent.change.from.same.quarter.a.year.ago.,
+                        Unit_nonlabor_costs=data$Unit.nonlabor.costs.percent.change.from.same.quarter.a.year.ago.,
+                        Unit_nonlabor_payments=data$Unit.nonlabor.payments.percent.change.from.same.quarter.a.year.ago.,
+                        Implicit_price_deflator=data$Implicit.price.deflator.percent.change.from.same.quarter.a.year.ago.,
+                        Real_hourly_compensation=data$Real.hourly.compensation.percent.change.from.same.quarter.a.year.ago.,
+                        Output_per_job=data$Output.per.job.percent.change.from.same.quarter.a.year.ago.,
+                        Labor_share=data$Labor.share.percent.change.from.same.quarter.a.year.ago.,
+                        Profits=data$Profits.percent.change.from.same.quarter.a.year.ago.,
+                        Unit_profits=data$Unit.profits.percent.change.from.same.quarter.a.year.ago.,
+                        Total_unit_costs=data$Total.unit.costs.percent.change.from.same.quarter.a.year.ago.)
+```
 
+The second table will be called from_previous_quarter and contain all the variables that are measuring the percent change from the previous quarter at an annual rate.
+```{r}
+from_previous_quarter <- tibble(major_sectors=data$Major.Sectors, year=data$Year, quarter=data$Quarter,
+                        Employment=data$Employment.percent.change.from.previous.quarter.at.annual.rate.,
+                        Average_weekly_hours_worked=data$Average.weekly.hours.worked.percent.change.from.previous.quarter.at.annual.rate.,
+                        Hours_worked=data$Hours.worked.percent.change.from.previous.quarter.at.annual.rate.,
+                        Output=data$Output.percent.change.from.previous.quarter.at.annual.rate.,
+                        Current_dollar_output=data$Current.dollar.output.percent.change.from.previous.quarter.at.annual.rate.,
+                        Compensation=data$Compensation.percent.change.from.previous.quarter.at.annual.rate.,
+                        Nonlabor_payments=data$Nonlabor.payments.percent.change.from.previous.quarter.at.annual.rate.,
+                        Labor_productivity=data$Labor.productivity.percent.change.from.previous.quarter.at.annual.rate.,
+                        Hourly_compensation=data$Hourly.compensation.percent.change.from.previous.quarter.at.annual.rate.,
+                        Unit_labor_costs=data$Unit.labor.costs.percent.change.from.previous.quarter.at.annual.rate.,
+                        Unit_nonlabor_costs=data$Unit.nonlabor.costs.percent.change.from.previous.quarter.at.annual.rate.,
+                        Unit_nonlabor_payments=data$Unit.nonlabor.payments.percent.change.from.previous.quarter.at.annual.rate.,
+                        Implicit_price_deflator=data$Implicit.price.deflator.percent.change.from.previous.quarter.at.annual.rate.,
+                        Real_hourly_compensation=data$Real.hourly.compensation.percent.change.from.previous.quarter.at.annual.rate.,
+                        Output_per_job=data$Output.per.job.percent.change.from.previous.quarter.at.annual.rate.,
+                        Labor_share=data$Labor.share.percent.change.from.previous.quarter.at.annual.rate.,
+                        Profits=data$Profits.percent.change.from.previous.quarter.at.annual.rate.,
+                        Unit_profits=data$Unit.profits.percent.change.from.previous.quarter.at.annual.rate.,
+                        Total_unit_costs=data$Total.unit.costs.percent.change.from.previous.quarter.at.annual.rate.)
+```
+
+The third table will be called where_2012_is_100 and contain all the variables that are scaled so that at the year 2012 the value will be 100.
+```{r}
+where_2012_is_100 <- tibble(major_sectors=data$Major.Sectors, year=data$Year, quarter=data$Quarter,
+                        Employment=data$Employment.2012.100.,
+                        Average_weekly_hours_worked=data$Average.weekly.hours.worked.2012.100.,
+                        Hours_worked=data$Hours.worked.2012.100.,
+                        Output=data$Output.2012.100.,
+                        Current_dollar_output=data$Current.dollar.output.2012.100.,
+                        Compensation=data$Compensation.2012.100.,
+                        Nonlabor_payments=data$Nonlabor.payments.2012.100.,
+                        Labor_productivity=data$Labor.productivity.2012.100.,
+                        Hourly_compensation=data$Hourly.compensation.2012.100.,
+                        Unit_labor_costs=data$Unit.labor.costs.2012.100.,
+                        Unit_nonlabor_costs=data$Unit.nonlabor.costs.2012.100.,
+                        Unit_nonlabor_payments=data$Unit.nonlabor.payments.2012.100.,
+                        Implicit_price_deflator=data$Implicit.price.deflator.2012.100.,
+                        Real_hourly_compensation=data$Real.hourly.compensation.2012.100.,
+                        Output_per_job=data$Output.per.job.2012.100.,
+                        Labor_share=data$Labor.share.2012.100.,
+                        Profits=data$Profits.2012.100.,
+                        Unit_profits=data$Unit.profits.2012.100.,
+                        Total_unit_costs=data$Total.unit.costs.2012.100.)
+```
+
+###Summarizing the Data
+####Lets take a look at some descriptive statistics. We will use the summary function to get information about the variables in the various tables. 
+
+First lets look at the table measuring the percent change from the same quarter a year ago.
+```{r}
+summary(from_year_ago)
+```
+  
+
+Next, we'll look at the table measuring the percent change from the previous quarter at an annual rate.
+```{r}
+summary(from_previous_quarter)
+```
+  
+
+Finally, we'll look at the table where the values are scaled so that at the year 2012 the value will be 100.
+```{r}
+summary(where_2012_is_100)
+```
+
+
+####Now lets look at some visualizations of the data.
+
+First we can look at the percent change in Employment from the same quarter a year ago, and have different lines based on the sector. Some interesting things we can see from this is that there was a big increase in empoyment in the nonfinancial corporations sector around 1950, and there was a big decrease in the employment in manufacturing a little before 2010.
+```{r}
+ggplot(from_previous_quarter, aes(x=year, y=Employment, group=major_sectors)) + geom_line(aes(color=major_sectors)) + labs(title="Percent Change in Employment from the Same Quarter a Year Ago", x="Year", y="Percent Change in Employment", color = "Major Sectors")
+```
+
+Next we can look at percent change in hourly compensation from the previous quarter at an annual rate, and have different lines based on the sector. Some interesting things we can see from this graph is that it was increasing a lot for all sectors from about 1965 to 1980, then it started to increase much slower.
+```{r}
+ggplot(from_year_ago, aes(x=year, y=Hourly_compensation, group=major_sectors)) + geom_line(aes(color=major_sectors)) + labs(title="Percent Change in Hourly Compensation from the Previous Quarter at an Annual Rate", x="Year", y="Percent Change in Hourly Compensation", color = "Major Sectors")+ theme(plot.title = element_text(size=12))
+```
+
+Finally we will look at labor productivity where it's scaled so that at the year 2012 the value will be 100, and have different lines based on the sector. An interesting thing that we can see from this is that manufacturing started out much lower that the other sectors, then increased quickly until around 2010 then slowed down and even started to decrease. 
+```{r}
+ggplot(where_2012_is_100, aes(x=year, y=Labor_productivity, group=major_sectors)) + geom_smooth(aes(color=major_sectors)) + labs(title="Labor Productivity", x="Year", y="Labor Productivity", color = "Major Sectors")
+```
+
+###Research Questions
+#####There are many potential research questions that could be answered by this data, but here are some that I think could be interesting:  
+  * How does increased productivity affect other factors such as employment, hours worked, and compensation?
+    + This could have interesting implications because we could see if increasing productivity is good for empoylees or not.
+  * What kind of effect does average weekly hours worked have on compensation?
+    + It would be interesting to see what kind of relationship there is (linear or other), to be able to tell if it is worth it to work more hours.
