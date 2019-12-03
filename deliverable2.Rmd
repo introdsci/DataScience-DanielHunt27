@@ -1,0 +1,133 @@
+---
+title: "Phase 2"
+output:
+  html_document:
+    df_print: paged
+---
+Now that we have looked at our initial data we need to start to use this data to make a model. We will be looking at how employment, average weekly hours worked, and compensation can affect labor productivity. It is important to know how these interact because businesses need to know how to get the best work out of their employees and how to run efficiently. It would be helpful to know if employment affects productivity so that we can take that into consideration as the job market gets better or worse. It's helpful for average weekly hours worked so that we can see if people work better with more or less hours, and adjust the work week to fit works best. Finally compensation is important because we want to see if people work harder the more they are compensated so that companies can consider this when deciding how much to pay employees.   
+
+Before we do this, we need to load all the libraries we will be using. This creates a function that will install the libraries if needed and then load the libraries for us to use. It also loads in everything from part 1 of the project, and installs some tools so that we can use an api to gather more data.
+```{r message=FALSE, error=FALSE, warning=FALSE, results='hide'}
+include <- function(library_name){
+  if( !(library_name %in% installed.packages()) )
+    install.packages(library_name) 
+  library(library_name, character.only=TRUE)
+}
+include("tidyverse")
+include("knitr")
+purl("deliverable1.Rmd", output = "part1.r") # produces r source from rmd
+source("part1.r") # executes the source
+include("devtools")
+include("rjson")
+include("caret")
+install_github("mikeasilva/blsAPI")
+```
+
+### Gather More Data
+We are going to load in more data that we can use in our project. This time it will be coming from an api made by the Bureau of Labor Statistics. As with the first part this is a reliable source. However, before I load in the data I am going to create a function that will create tibbles from json for this api. This will leave out the footnotes of the data, because they were creating problems and weren't data that was going to be used. The built in R function weren't working well for the format that the api gives us, so I decided it would be easier to make my own. I decided to make it into a function so that later if we wanted more data from this api, we can just use the function again.
+```{r}
+creat_tib_from_json <- function(json, num) {
+  temp <- tibble('year' = character(), 'period'= character(), 'periodName'= character(), 'latest'= character(), 'value'= character())
+  for (i in json$Results$series[[num]][[2]]) {
+    if("latest" %in% names(i)) {
+      temp <- bind_rows(temp, tibble('year' = i$year, 'period'= i$period, 'periodName'= i$periodName, 'latest'= i$latest, 'value'= i$value))
+    }
+    else {
+      temp <- bind_rows(temp, tibble('year' = i$year, 'period'= i$period, 'periodName'= i$periodName, 'value'= i$value))
+    }
+  }
+  temp$year <- as_factor(temp$year)
+  temp$period <- as_factor(temp$period)
+  temp$periodName <- as_factor(temp$periodName)
+  temp$latest <- as.logical(temp$latest)
+  temp$value <- as.integer(temp$value)
+  return(temp)
+}
+```
+
+Now that we have the function we will make a call to the api, use the fromJson function to convert it, then run it in our function to create a tibble that we can use.
+```{r message=FALSE, error=FALSE, warning=FALSE, results='hide'}
+library("blsAPI")
+payload <- list('seriesid'=c('CES0500000001', 'CES0500000002', 'CES0500000003'), 'startyear'='2009', 'endyear'='2019')
+response <- blsAPI(payload)
+json <- fromJSON(response)
+
+private_employee_total <- creat_tib_from_json(json, 1)
+avg_weekly_hrs_worked <- creat_tib_from_json(json, 2)
+avg_hourly_earnings <- creat_tib_from_json(json, 3)
+```
+
+The first dataset is looking at all employees in the private sector, and is seasonally adjusted. Each number is in the the thousands of employees.
+```{r}
+private_employee_total
+```
+
+The second dataset is looking at the average weekly hours worked of all employees in the private sector and is seasonally adjusted.
+```{r}
+avg_weekly_hrs_worked
+```
+
+The third dataset is looking at the average hourly earnings of all employees in the private sector and is seasonally adjusted.
+```{r}
+avg_hourly_earnings
+```
+For all of these datasets the year is the year of the observation, the period is the number of the month, the periodName is the name of the month, latest designates whether it is the most recent observation or not, and value contains the actual measurment (number of employees, average weekly hours worked, and average hourly earnings).    
+
+These will be useful to have so that we can see the actual numbers instead of just the adjusted ones from the previous dataset. These also break it down by months instead of just looking at it annually.   
+
+
+### Build a Model
+Now, we can look at how employment, average weekly hours worked, and compensation predict labor productivity. 
+```{r}
+productivity_model <- lm(data=where_2012_is_100, formula=Labor_productivity~Employment+Average_weekly_hours_worked+Compensation)
+summary(productivity_model)
+```
+Since the p-value is less than 0.05 for all of them we can say that employment, average weekly hours worked, and compensation are all stastically significant predictors of labor productivity. According to these results it appears that as employment and average weekly hours worked increases, labor productivity decreases. Also, as compensation increases, so does productivity.   
+
+Let's look at some graphs of this:   
+First we will look at a graph of employment and labor productivity. This show all of the points as well as the line which is what our prediction will be.
+It appears to fit fairly well in the beginning, but then not that great later on. Part of the problem is that the data doesn't look like it is linear.
+```{r}
+ggplot(data=where_2012_is_100, aes(x=Employment,y=Labor_productivity)) + geom_point() + geom_smooth(method="lm") + labs(x="Employment", y="Labor Productivity")
+```
+
+Next we will look at a graph of average weekly hours worked and labor productivity. We can see that it is spread out some in the beginning, but then appears to fit better as we go to the right.
+```{r}
+ggplot(data=where_2012_is_100, aes(x=Average_weekly_hours_worked,y=Labor_productivity)) + geom_point() + geom_smooth(method="lm") + labs(x="Average Weekly Hours Worked", y="Labor Productivity")
+```
+
+Finally we will look at a graph of compensation and labor productivity. We can see that this fits pretty well with the exception of some points in the middle. It could be that one of the major sectors doesn't fit this model very well, and that is why those points are far away from the line.
+```{r}
+ggplot(data=where_2012_is_100, aes(x=Compensation,y=Labor_productivity)) + geom_point() + geom_smooth(method="lm") + labs(x="Compensation", y="Labor Productivity")
+```
+
+Now that we have looked at how the variables relate to labor productivity, we will see how well our model is able to predict. To do this we will seperate the data into two groups. A training group made up of 75% of the data, and a testing group made up of 25% of the data. We will use the training data to create the model, then use the testing data to see how well our model can predict labor productivity.
+```{r}
+sampling = createDataPartition(where_2012_is_100$Labor_productivity, p = 0.75, list = FALSE)
+train = where_2012_is_100[sampling, ]
+test = where_2012_is_100[-sampling, ]
+productivity_model2 <- lm(data=train, formula=Labor_productivity~Employment+Average_weekly_hours_worked+Compensation)
+productivity_prediction <- predict(productivity_model2, test)
+ggplot(data=test, aes(x=productivity_prediction,y=test$Labor_productivity)) + geom_point() + labs(x="Productivity Prediction", y="Labor Productivity")
+```
+
+From looking at our graph we can see that the points are fairly close together, and look pretty linear, which is want we want.
+
+Now let's look at some more metrics for our model:    
+
+First we will look at the R-squared value, which indicates the percentage of variance in the dependent variable that the independent variables explain. The closer to 1.0 (100%) that it is the better, and since ours is .96 that is pretty good.
+```{r}
+R2(productivity_prediction, test$Labor_productivity)
+```
+
+Now we will look at the mean absolute error. This basically describes the typical magnitude of the residuals, and the lower the value the better. Since the highest value is 100 and a MAE of 3.5 is fairly low comparatively, this means that it is probably a pretty good fit.
+```{r}
+MAE(productivity_prediction, test$Labor_productivity)
+```
+
+Lastly we will look at the root mean squared error, which is a measure of how large your residuals are spread out. Once again this is fairly low compared to our max value of 100, so that points to it being a pretty good fit.
+```{r}
+RMSE(productivity_prediction, test$Labor_productivity)
+```
+
+Overall our model seems to be relatively good at predicting. This makes sense because we would expect employment, average weekly hours worked, and compensation to all have an affect on labor productivity. It makes sense that people might work harder to keep a job if employment is low, since there would be less options for other jobs. It also makes sense that if people are working too many hours, they might be tired and so cannot be a productive as if they were working fewer hours. Finally it makes sense that the more that someone gets compensated the more productive they will be since they will be more motivated by the higher pay.

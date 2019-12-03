@@ -16,7 +16,8 @@ This goes through getting the data and getting it reading to be used for analysi
 
 ### 2. Model Planning and Building
 
-Coming soon...
+This goes through adding an additional data source from an api, and creating a model to predict labor productivity.   
+<a href="deliverable2.html">link</a>
 
 ### 3. Results and Operationalization
 
