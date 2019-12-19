@@ -8,7 +8,7 @@ output:
 
 ## Abstract
 
-So far I have gotten data from "https://www.bls.gov/lpc/major_sector_lpc_data.csv", and have cleaned it up so it is ready to be used. I have also done some very basic analysis.
+Using data from the the U.S. Bureau of Labor Statistics, I have tried to find ways for businesses to increase productivity. I found that decreasing hours worked, and increasing compensation are two ways to accomplish this.
 
 ### 1. Discovery and Data Preparation
 This goes through getting the data and getting it reading to be used for analysis. It also looks at some things we can do with the data.  
@@ -21,5 +21,6 @@ This goes through adding an additional data source from an api, and creating a m
 
 ### 3. Results and Operationalization
 
-Coming soon...
+In this phase I create a second model to predict hourly compensation, and try to operationalize some of my findings.     
+<a href="deliverable3.html">link</a>
 

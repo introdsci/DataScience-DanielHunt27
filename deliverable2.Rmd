@@ -4,7 +4,7 @@ output:
   html_document:
     df_print: paged
 ---
-Now that we have looked at our initial data we need to start to use this data to make a model. We will be looking at how employment, average weekly hours worked, and compensation can affect labor productivity. It is important to know how these interact because businesses need to know how to get the best work out of their employees and how to run efficiently. It would be helpful to know if employment affects productivity so that we can take that into consideration as the job market gets better or worse. It's helpful for average weekly hours worked so that we can see if people work better with more or less hours, and adjust the work week to fit works best. Finally compensation is important because we want to see if people work harder the more they are compensated so that companies can consider this when deciding how much to pay employees.   
+Now that we have looked at our initial data, we need to use this data to make a model. We will be looking at how employment, average weekly hours worked, and compensation can affect labor productivity. It is important to know how these interact because businesses need to know how to get the best work out of their employees and how to run efficiently. It would be helpful to know if employment affects productivity so that we can take that into consideration as the job market gets better or worse. It's helpful for average weekly hours worked so that we can see if people work better with more or less hours, and adjust the work week to fit works best. Finally compensation is important because we want to see if people work harder the more they are compensated so that companies can consider this when deciding how much to pay employees.   
 
 Before we do this, we need to load all the libraries we will be using. This creates a function that will install the libraries if needed and then load the libraries for us to use. It also loads in everything from part 1 of the project, and installs some tools so that we can use an api to gather more data.
 ```{r message=FALSE, error=FALSE, warning=FALSE, results='hide'}
@@ -15,8 +15,8 @@ include <- function(library_name){
 }
 include("tidyverse")
 include("knitr")
-purl("deliverable1.Rmd", output = "part1.r") # produces r source from rmd
-source("part1.r") # executes the source
+#purl("deliverable1.Rmd", output = "part1.r") # produces r source from rmd
+#source("part1.r") # executes the source
 include("devtools")
 include("rjson")
 include("caret")
@@ -82,7 +82,7 @@ Now, we can look at how employment, average weekly hours worked, and compensatio
 productivity_model <- lm(data=where_2012_is_100, formula=Labor_productivity~Employment+Average_weekly_hours_worked+Compensation)
 summary(productivity_model)
 ```
-Since the p-value is less than 0.05 for all of them we can say that employment, average weekly hours worked, and compensation are all stastically significant predictors of labor productivity. According to these results it appears that as employment and average weekly hours worked increases, labor productivity decreases. Also, as compensation increases, so does productivity.   
+Since the p-value is less than 0.05 for all of them we can say that employment, average weekly hours worked, and compensation are all statistically significant predictors of labor productivity. According to these results it appears that as employment and average weekly hours worked increases, labor productivity decreases. Also, as compensation increases, so does productivity.   
 
 Let's look at some graphs of this:   
 First we will look at a graph of employment and labor productivity. This show all of the points as well as the line which is what our prediction will be.
@@ -120,14 +120,14 @@ First we will look at the R-squared value, which indicates the percentage of var
 R2(productivity_prediction, test$Labor_productivity)
 ```
 
-Now we will look at the mean absolute error. This basically describes the typical magnitude of the residuals, and the lower the value the better. Since the highest value is 100 and a MAE of 3.5 is fairly low comparatively, this means that it is probably a pretty good fit.
+Now we will look at the mean absolute error. This basically describes the typical magnitude of the residuals, and the lower the value the better. Since the highest value is around 100 and a MAE of 3.5 is fairly low comparatively, this means that it is probably a pretty good fit.
 ```{r}
 MAE(productivity_prediction, test$Labor_productivity)
 ```
 
-Lastly we will look at the root mean squared error, which is a measure of how large your residuals are spread out. Once again this is fairly low compared to our max value of 100, so that points to it being a pretty good fit.
+Lastly we will look at the root mean squared error, which is a measure of how large your residuals are spread out. Once again this is fairly low compared to our max value of around 100, so that points to it being a pretty good fit.
 ```{r}
 RMSE(productivity_prediction, test$Labor_productivity)
 ```
 
-Overall our model seems to be relatively good at predicting. This makes sense because we would expect employment, average weekly hours worked, and compensation to all have an affect on labor productivity. It makes sense that people might work harder to keep a job if employment is low, since there would be less options for other jobs. It also makes sense that if people are working too many hours, they might be tired and so cannot be a productive as if they were working fewer hours. Finally it makes sense that the more that someone gets compensated the more productive they will be since they will be more motivated by the higher pay.
+Overall our model seems to be relatively good at predicting. This makes sense because we would expect employment, average weekly hours worked, and compensation to all have an affect on labor productivity. It makes sense that people might work harder to keep a job if employment is low, since there would be less options for other jobs. It also makes sense that if people are working too many hours, they might be tired and so cannot be as productive as if they were working fewer hours. Finally it makes sense that the more that someone gets compensated the more productive they will be since they will be more motivated by the higher pay.

@@ -1,0 +1,76 @@
+---
+title: "Phase 3"
+output:
+  html_document:
+    df_print: paged
+---
+After seeing how employment, average weekly hours worked, and compensation can affect labor productivity, we need to look at the effects that this can have. One thing that we saw in the previous part was that as people work more hours, their productivity decreases. This could lead to employers giving employees less hours to work, which could be bad for employees if they get paid the same amount per hour. This would lead to them making less money overall. Because of this I thought it would be interesting to look into what affect average weekly hours worked has on hourly compensation.   
+
+Before we get started we need to import the previous part so that we can use the data.
+```{r echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, results='hide'}
+include <- function(library_name){
+  if( !(library_name %in% installed.packages()) )
+    install.packages(library_name) 
+  library(library_name, character.only=TRUE)
+}
+include("knitr")
+purl("deliverable2.Rmd", output = "part2.r") # produces r source from rmd
+source("part1.r")
+source("part2.r") # executes the source
+```
+
+###Build a Second Model 
+Before we start to build the new model let's take a look at the data we will be using again, so that we can see what we are working with.
+```{r}
+where_2012_is_100
+```
+
+Just as in the previous part we will start by building our model. We will be creating a linear regression model, where we are trying to predict the real hourly compensation with the average weekly hours worked. I am using the real hourly compensation instead of just the hourly compensation because the real hourly compensation is adjusted for inflation. We want it adjusted for inflation because otherwise the amount paid will always increase as we get more recent measurements.
+```{r}
+compensation_model <- lm(data=where_2012_is_100, formula=Real_hourly_compensation~Average_weekly_hours_worked)
+summary(compensation_model)
+```
+We can see that since the p-value is very small (less than 0.5) for the average weekly hours worked, that it is a statistically significant predictor of the real hourly compensation. We can also see that the slope is negative, which means that as the average weekly hours worked increases, the hourly compensation decreases. This is interesting, because I would have thought that as you work more, you also get paid more.   
+
+Now let's look at a graph of the data.
+```{r}
+ggplot(data=where_2012_is_100, aes(x=Average_weekly_hours_worked,y=Real_hourly_compensation)) + geom_point() + geom_smooth(method="lm") + labs(x="Average Weekly Hours Worked", y="Hourly Compensation")
+```
+From looking at the graph we can see that this appears to fit pretty well. We can also see the negative slope.   
+
+###Cross-Validation   
+As we did in the last part, we will now see how well our model is able to predict the compensation. To do this we will seperate the data into two groups. A training group made up of 75% of the data, and a testing group made up of 25% of the data. We will use the training data to create the model, then use the testing data to see how well our model can predict the real hourly compensation.
+```{r}
+sampling = createDataPartition(where_2012_is_100$Real_hourly_compensation, p = 0.75, list = FALSE)
+train = where_2012_is_100[sampling, ]
+test = where_2012_is_100[-sampling, ]
+compensation_model2 <- lm(data=train, formula=Real_hourly_compensation~Average_weekly_hours_worked)
+compensation_prediction <- predict(compensation_model2, test)
+ggplot(data=test, aes(x=compensation_prediction, y=test$Real_hourly_compensation)) + geom_point() + labs(x="Compensation Prediction", y="Real Hourly Compensation")
+```
+From looking at our graph we can see that it looks pretty linear, and the points aren't too spread out, which is what we want.   
+
+Now let's look at some more metrics for our model:   
+
+The first metric is the R-squared value, which, as explained in the previous part, indicates the percentage of variance in the dependent variable that the independent variables explain. The closer to 1.0 the value is the better, so our value of .85 is pretty good.
+```{r}
+R2(compensation_prediction, test$Real_hourly_compensation)
+```
+
+Next we will look at the mean absolute error, which basically describes the typical magnitude of the residuals. For this one the lower the number the better, so our value of 6.2 is pretty good compared to the highest value in our data of around 100.
+```{r}
+MAE(compensation_prediction, test$Real_hourly_compensation)
+```
+
+Finally, we will look at the root mean squared error, which is a measure of how large your residuals are spread out. Again the value of 7.5 is fairly low compared to our highest value of around 100, so this is good.
+```{r}
+RMSE(compensation_prediction, test$Real_hourly_compensation)
+```
+Overall, our model seems to be fairly good at predicting the real hourly compensation, however not quite as good as our model in the previous part was at predicting productivity.  
+
+###Operationalization   
+When looking at our initial model we found that as employment and average weekly hours worked increases, labor productivity decreases. We also found that as compensation increases so does productivity.    
+
+One way that these findings could be applied is for employers to have employees work less hours, which should increase productivity. One drawback of this could be what I was trying to address at the beginning of this part, which is that if pay doesn't increase then people won't be making enough money. This would be bad for regular people, because it would make it harder for them to get by. It could also be bad for companies if people had to start working multiple jobs, since this could potentially make them lose any productivity increase since the employees would still be tired. With our second model however, we found that people who work fewer hours tend to get paid more per hour. This would make it appear that if we lower how many hours people have to work, then it could lead to them getting paid more. However, I think there could be some other factors that are affecting it. For instance people who make more money per hour might tend to work less hours, since they don't have to work as much to make the same amount as someone who gets paid less. I think that the data is probably too general, and we would need to collect some more specific data before we can really be able to predict what would happen.   
+
+Since we also found that increasing compensation, increases productivity though, it would make sense for employers to pay more. The problem with this is if you pay them too much, then it will offset any increased profit from the increased productivity since you have to pay everyone more. Overall, you would need to find a good balance between all these factors to maximize productivity without increasing costs too much, and we would need to collect more data for this.   
